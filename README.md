@@ -1,4 +1,6 @@
-JSTP
+Texture Analysis in gloss imaging system (GIS)
+
 ====
 
-Image Processing with gloss &amp; texture
+Image Processing with texture
+using statistics analysis
