@@ -5,28 +5,35 @@
 #include <cmath>
 const double PI = 4*atan(1);
 double avrg(std::vector<unsigned short> v)
-{      int sum=0;
+{      double sum=0;
        for(unsigned int i=0;i<v.size();i++)
                sum+=v[i];
        return sum/v.size();
 }
+double avrg(std::vector<double> v)
+{
+	double sum = 0;
+    for(unsigned int i=0;i<v.size();i++)
+		sum+=v[i];
+	return sum/v.size();
+}
 double avrg(unsigned short *p, int num)
 {
-	int sum = 0;
+	double sum = 0;
 	for(unsigned int i=0; i<num; i++)
 		sum += p[i];
 	return double(sum)/double(num);
 }
 double avrg(unsigned short *p, int init, int end)
 {
-	int sum = 0;
+	double sum = 0;
 	for(unsigned int i=init; i<end; i++)
 		sum += p[i];
 	return double(sum)/double(end - init);
 }
 double gavrg(unsigned short *p, int num)
 {
-
+	return -1;
 }
 double stdv(std::vector<unsigned short> v, double ave)
 {
@@ -82,35 +89,89 @@ int peakcount(unsigned short *in, int num)
 	}
 	return count;
 }
-int peakcount(unsigned short *in,const int num, int framesize)
+int peakcount(unsigned short *in,const int num, int framesize, unsigned short *out)
 {
-	//bool *printed = new bool[num];
-	bool *cted = new bool[num];
-	for(int i=0; i<num;i++)
-	{
-		//printed[i] = false;
-		cted[i] = false;
-	}
 	int count = 0;
-	//cout<<"[ ";
-	for(int i=0; i<num-framesize; i+=1)
+	int wframsize = framesize;
+	int worked = 0;
+	while(worked < num)
 	{
-		double mean = avrg(in, i, i+framesize);
-		for(int j = i; j<i+framesize; j++)
+		double mean = avrg(in, worked, worked + wframsize);
+		//cout<<"fmean "<<mean<<" ";
+		for(int j=worked; j<worked+wframsize; j++)
 		{
-			if( in[j] > mean && in[j] > in[j-1] && in[j] > in[j+1] && !cted[j])
+			if( in[j] > in[j-1] && in[j] > in[j+1] && in[j] >= mean)
 			{
+				out[j] = 40000;
 				count++;
-				cted[j] = true;
 			}
+			else
+				out[j] = 20000;
 		}
+		if(worked + wframsize > num)
+			wframsize = num - worked;
+		worked += wframsize;
+		//cout<<"wked "<<worked<<"num "<<num<<" \n";
 	}
-	//cout<<" ]"<<endl;
-	//delete[] printed;
-	delete[] cted;
 	return count;
 }
-
+int peakcount(unsigned short *in,const int num, int framesize)
+{
+	int count = 0;
+	int wframsize = framesize;
+	int worked = 0;
+	while(worked < num)
+	{
+		double mean = avrg(in, worked, worked + wframsize);
+		//cout<<"fmean "<<mean<<" ";
+		for(int j=worked; j<worked+wframsize; j++)
+		{
+			if( in[j] > in[j-1] && in[j] > in[j+1] && in[j] >= mean)
+				count++;
+		}
+		if(worked + wframsize > num)
+			wframsize = num - worked;
+		worked += wframsize;
+		//cout<<"wked "<<worked<<"num "<<num<<" \n";
+	}
+	return count;
+}
+int peakcount(unsigned short *in,const int num, double sd)
+{
+	int count = 0;
+	double mean = avrg(in, num);
+	for(int i=0; i<num; i++)
+	{
+		if(in[i] > mean+sd)
+			count++;
+	}
+	return count;
+}
+int peakcount(std::vector<double> zvec, bool *out)
+{
+	int count = 0;
+	double zsum = 0, zmean = 0;
+	int zc = 0;
+	for(int i=0;i<zvec.size(); i++)
+	{
+		if(zvec[i] > 0)
+		{
+			zsum += zvec[i];
+			zc++;
+		}
+	}
+	zmean = zsum/zc;
+	//cout<<"zm"<<zmean<<"zc"<<zc<<" ";
+	for(int i=0;i<zvec.size(); i++)
+	{
+		if(zvec[i] > zmean)
+		{
+			count++;
+			out[i] = true;
+		}
+	}
+	return count;
+}
 /*double spectralflat(unsigned short *in, int num)
 {
 	double mean = avrg(in,num);

@@ -48,35 +48,50 @@ int main(int argc, char** argv)
 	//convert to grayscale
 	accessMat(matimg, gimg);
 	//comparison between grayscale and original
-	namedWindow("image to graph");
-	imshow("image to graph", matimg);
-	namedWindow("grayscale");
-	imshow("grayscale", gimg);
+	//namedWindow("image to graph");
+	//imshow("image to graph", matimg);
+	//namedWindow("grayscale");
+	//imshow("grayscale", gimg);
 
 	// specify a line to plot
 	int the_line = 0;
 	int key = -1;
+	
+	int maxrow = 0;
+	double sd = 0;
+	bool *peakmap = nullptr;
+	bool allocated = false;
 	while (the_line < gimg.rows)
 	{
 		unsigned short *pb = gimg.ptr<unsigned short>(the_line);
 		vector<double> zpb;
-		
-		
-		
+
 		int width = gimg.cols;
 		int heigth = gimg.rows;
 		double mean = avrg(pb, width);
 		double sd = stdv(pb, width, mean);
-		int localmax = peakcount(pb, width,100);
+
+		if(!allocated)
+		{
+			peakmap = new bool[width];
+			allocated = true;
+		}
+		for(int i=0; i<width; i++)
+			peakmap[i] = false;
 		max = maxt<unsigned short>(maxMat<unsigned short>(pb, width),max);
+		if(mean > maxmean)
+			maxrow = the_line;
 		maxmean = maxt<double>(mean, maxmean);
 		zpb.resize(width);
-
 
 		for(unsigned int i=0; i<width; i++)
 			zpb[i] = zscore(pb[i], mean, sd);
 
-		cout<<"row  : ["<<the_line+1<<"/"<<heigth<<"]";
+		int localmax = peakcount(zpb,peakmap);
+		
+
+		the_line++;
+		/*cout<<"row  : ["<<the_line+1<<"/"<<heigth<<"]";
 		cout<<" max its : "<<maxMat<unsigned short>(pb, width);
 		cout<<" max OIS : "<<max;
 		cout<<" mean : "<<fixed<<setprecision(2)<<mean;
@@ -85,22 +100,69 @@ int main(int argc, char** argv)
 		cout<<" zmin : "<<fixed<<setprecision(2)<<*min_element(zpb.begin(), zpb.end());
 		cout<<" zmax : "<<fixed<<setprecision(2)<<*max_element(zpb.begin(), zpb.end());
 		cout<<" pc : "<<localmax;
-		cout<<endl;
-		CvPlot::plot("GC", pb, width, 1, 128, 192, 128);
-		//CvPlot::plot("memcpy", cpb, width, 1, 128, 192, 128);
+		cout<<endl;*/
+		//CvPlot::plot("GC", pb, width, 1, 128, 192, 128);
+		//CvPlot::plot("peak", pk, width, 1, 64, 221, 64);
 		
-		key = cvWaitKey(0);
+		/*key = cvWaitKey(0);
 		if (key == 32)
 		{
 			// plot the next line
 			the_line++;
 			// clear previous plots
 			CvPlot::clear("GC");
-			//CvPlot::clear("memcpy");
+			//CvPlot::clear("peak");
 		}
 		else
-			break;
+			break;*/
 	}
+
+	{
+		unsigned short *pb = gimg.ptr<unsigned short>(maxrow);
+		vector<double> zpb;
+
+		int width = gimg.cols;
+		int heigth = gimg.rows;
+		double mean = avrg(pb, width);
+		double sd = stdv(pb, width, mean);
+
+		if(!allocated)
+		{
+			peakmap = new bool[width];
+			allocated = true;
+			for(int i=0; i<width; i++)
+				peakmap[i] = false;
+		}
+		for(int i=0; i<width; i++)
+			peakmap[i] = false;
+
+		max = maxt<unsigned short>(maxMat<unsigned short>(pb, width),max);
+		if(mean > maxmean)
+			maxrow = the_line;
+		maxmean = maxt<double>(mean, maxmean);
+		zpb.resize(width);
+
+		for(unsigned int i=0; i<width; i++)
+			zpb[i] = zscore(pb[i], mean, sd);
+
+		int localmax = peakcount(zpb,peakmap);
+
+		cout<<"r"<<maxrow+1;
+		cout<<" : mits "<<maxMat<unsigned short>(pb, width);
+		//cout<<" max OIS : "<<max;
+		//cout<<" mean : "<<fixed<<setprecision(2)<<mean;
+		cout<<" mmean "<<fixed<<setprecision(2)<<maxmean;
+		cout<<" sd "<<fixed<<setprecision(2)<<sd;
+		cout<<" z "<<fixed<<setprecision(2)<<*min_element(zpb.begin(), zpb.end());
+		cout<<" ,";
+		cout<<" "<<fixed<<setprecision(2)<<*max_element(zpb.begin(), zpb.end());
+		cout<<" pc "<<localmax;
+		cout<<endl;
+		CvPlot::plot("GC", pb, width, 1, 128, 192, 128);
+	}
+	if(allocated)
+		delete[] peakmap;
+
 	waitKey(0);
 	return 0;
 }
