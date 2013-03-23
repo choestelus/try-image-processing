@@ -153,6 +153,12 @@ int main(int argc, char** argv)
 		cout<<" ,";
 		cout<<" "<<fixed<<setprecision(2)<<*max_element(zpb.begin(), zpb.end());
 		cout<<endl;
+		//export data for matlab
+		cout<<"[ ";
+		for(int i=0; i<width; i++)
+			cout<<pb[i]<<" ";
+		cout<<"]";
+		cout<<endl;
 		CvPlot::plot("GC", pb, width, 1, 128, 192, 128);
 		CvPlot::label("input");
 		CvPlot::plot("GC", movavg, width, 1, 255, 0, 0);
