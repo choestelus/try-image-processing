@@ -15,9 +15,10 @@
 #include "statmath.h"
 #define rowPtr(imagePtr, dataType, lineIndex) \
 	(dataType *)(imagePtr->imageData + (lineIndex) * imagePtr->widthStep)
-
+#define mframesize 2
 using namespace cv;
 using namespace std;
+using std::cout;
 
 void accessMat(Mat&, Mat&);
 
@@ -60,7 +61,9 @@ int main(int argc, char** argv)
 	int maxrow = 0;
 	double sd = 0;
 	bool *peakmap = nullptr;
-	bool allocated = false;
+	bool pmallocated = false;
+	bool movavgalloc = false;
+	double *movavg = nullptr;
 	while (the_line < gimg.rows)
 	{
 		unsigned short *pb = gimg.ptr<unsigned short>(the_line);
@@ -71,11 +74,18 @@ int main(int argc, char** argv)
 		double mean = avrg(pb, width);
 		double sd = stdv(pb, width, mean);
 
-		if(!allocated)
+		if(!pmallocated)
 		{
 			peakmap = new bool[width];
-			allocated = true;
+			pmallocated = true;
 		}
+		if(!movavgalloc)
+		{
+			movavg = new double[width];
+			movavgalloc = true;
+		}
+		simpmovavg(pb, movavg, width, mframesize);
+
 		for(int i=0; i<width; i++)
 			peakmap[i] = false;
 		max = maxt<unsigned short>(maxMat<unsigned short>(pb, width),max);
@@ -84,14 +94,10 @@ int main(int argc, char** argv)
 		maxmean = maxt<double>(mean, maxmean);
 		zpb.resize(width);
 
-		for(unsigned int i=0; i<width; i++)
+		for(int i=0; i<width; i++)
 			zpb[i] = zscore(pb[i], mean, sd);
-
-		int localmax = peakcount(zpb,peakmap);
 		
-
-		the_line++;
-		/*cout<<"row  : ["<<the_line+1<<"/"<<heigth<<"]";
+		cout<<"row  : ["<<the_line+1<<"/"<<heigth<<"]";
 		cout<<" max its : "<<maxMat<unsigned short>(pb, width);
 		cout<<" max OIS : "<<max;
 		cout<<" mean : "<<fixed<<setprecision(2)<<mean;
@@ -99,12 +105,13 @@ int main(int argc, char** argv)
 		cout<<" s.d. : "<<fixed<<setprecision(2)<<sd;
 		cout<<" zmin : "<<fixed<<setprecision(2)<<*min_element(zpb.begin(), zpb.end());
 		cout<<" zmax : "<<fixed<<setprecision(2)<<*max_element(zpb.begin(), zpb.end());
-		cout<<" pc : "<<localmax;
-		cout<<endl;*/
-		//CvPlot::plot("GC", pb, width, 1, 128, 192, 128);
-		//CvPlot::plot("peak", pk, width, 1, 64, 221, 64);
 		
-		/*key = cvWaitKey(0);
+		cout<<endl;
+		CvPlot::plot("GC", pb, width, 1, 128, 192, 128);
+		CvPlot::label("input");
+		CvPlot::plot("GC", movavg, width, 1, 255, 0, 0);
+		CvPlot::label("smovavg");
+		key = cvWaitKey(0);
 		if (key == 32)
 		{
 			// plot the next line
@@ -114,7 +121,7 @@ int main(int argc, char** argv)
 			//CvPlot::clear("peak");
 		}
 		else
-			break;*/
+			break;
 	}
 
 	{
@@ -126,43 +133,27 @@ int main(int argc, char** argv)
 		double mean = avrg(pb, width);
 		double sd = stdv(pb, width, mean);
 
-		if(!allocated)
-		{
-			peakmap = new bool[width];
-			allocated = true;
-			for(int i=0; i<width; i++)
-				peakmap[i] = false;
-		}
-		for(int i=0; i<width; i++)
-			peakmap[i] = false;
-
-		max = maxt<unsigned short>(maxMat<unsigned short>(pb, width),max);
-		if(mean > maxmean)
-			maxrow = the_line;
-		maxmean = maxt<double>(mean, maxmean);
 		zpb.resize(width);
 
-		for(unsigned int i=0; i<width; i++)
+		for(int i=0; i<width; i++)
 			zpb[i] = zscore(pb[i], mean, sd);
 
-		int localmax = peakcount(zpb,peakmap);
+		simpmovavg(pb, movavg, width, mframesize);
 
 		cout<<"r"<<maxrow+1;
 		cout<<" : mits "<<maxMat<unsigned short>(pb, width);
-		//cout<<" max OIS : "<<max;
-		//cout<<" mean : "<<fixed<<setprecision(2)<<mean;
 		cout<<" mmean "<<fixed<<setprecision(2)<<maxmean;
 		cout<<" sd "<<fixed<<setprecision(2)<<sd;
 		cout<<" z "<<fixed<<setprecision(2)<<*min_element(zpb.begin(), zpb.end());
 		cout<<" ,";
 		cout<<" "<<fixed<<setprecision(2)<<*max_element(zpb.begin(), zpb.end());
-		cout<<" pc "<<localmax;
 		cout<<endl;
 		CvPlot::plot("GC", pb, width, 1, 128, 192, 128);
+		CvPlot::label("input");
+		CvPlot::plot("GC", movavg, width, 1, 255, 0, 0);
 	}
-	if(allocated)
-		delete[] peakmap;
-
+	if(movavgalloc)
+		delete[] movavg;
 	waitKey(0);
 	return 0;
 }

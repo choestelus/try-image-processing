@@ -3,6 +3,7 @@
 #define _statmath_h
 #include <vector>
 #include <cmath>
+#include <algorithm>
 const double PI = 4*atan(1);
 double avrg(std::vector<unsigned short> v)
 {      double sum=0;
@@ -20,14 +21,14 @@ double avrg(std::vector<double> v)
 double avrg(unsigned short *p, int num)
 {
 	double sum = 0;
-	for(unsigned int i=0; i<num; i++)
+	for(int i=0; i<num; i++)
 		sum += p[i];
 	return double(sum)/double(num);
 }
 double avrg(unsigned short *p, int init, int end)
 {
 	double sum = 0;
-	for(unsigned int i=init; i<end; i++)
+	for(int i=init; i<end; i++)
 		sum += p[i];
 	return double(sum)/double(end - init);
 }
@@ -50,7 +51,7 @@ double stdv(unsigned short *p, int num, double mean)
 {
 	double E = 0;
 	double inverse = 1.0 / static_cast<double>(num);
-	for(unsigned int i = 0; i<num; i++)
+	for(int i = 0; i<num; i++)
 		E += pow(static_cast<double>(p[i]) - mean, 2);
 	return sqrt(inverse * E);
 }
@@ -152,7 +153,7 @@ int peakcount(std::vector<double> zvec, bool *out)
 	int count = 0;
 	double zsum = 0, zmean = 0;
 	int zc = 0;
-	for(int i=0;i<zvec.size(); i++)
+	for(unsigned int i=0;i<zvec.size(); i++)
 	{
 		if(zvec[i] > 0)
 		{
@@ -162,7 +163,7 @@ int peakcount(std::vector<double> zvec, bool *out)
 	}
 	zmean = zsum/zc;
 	//cout<<"zm"<<zmean<<"zc"<<zc<<" ";
-	for(int i=0;i<zvec.size(); i++)
+	for(unsigned int i=0;i<zvec.size(); i++)
 	{
 		if(zvec[i] > zmean)
 		{
@@ -172,8 +173,47 @@ int peakcount(std::vector<double> zvec, bool *out)
 	}
 	return count;
 }
-/*double spectralflat(unsigned short *in, int num)
+void simpmovavg(unsigned short *in, double *out, int num, int n)
 {
-	double mean = avrg(in,num);
-}*/
+	//initializing out of range data
+	for(int i=0; i<n; i++)
+		out[i] = 0;
+	for(int i=0; i<n; i++)
+	{
+		if(i == 0)
+			out[i] = in[i];
+		else
+		{
+			int tempsum = 0;
+			for(int j = i; j<n;j++)
+				tempsum += in[j];
+			out[i] = double(tempsum)/double(i+1);
+		}
+	}
+	//end of out of range case
+	double avgsum = 0;
+	int curr = 0;
+
+	for(int i=curr; i<curr+n; i++)
+		avgsum += in[i];
+	avgsum = avgsum/n;
+	out[n-1] = avgsum;
+	curr = n;
+
+	while(curr < num)
+	{
+		out[curr] = out[curr-1] - double(in[curr-1])/double(n) + double(in[curr])/double(n);
+		curr++;
+	}
+}
+void simpmovmed(unsigned short *in, double *out, int num, const int n)
+{
+	unsigned short *temp = new unsigned short[n];
+	while(0)
+	{
+		;
+	}
+
+	delete[] temp;
+}
 #endif
