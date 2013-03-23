@@ -223,28 +223,40 @@ void simpmovmed(unsigned short *in, double *out, int num, int n)
 		n++;
 	std::vector<unsigned short> temp;
 	temp.resize(n);
-
+	//cout<<"resized\n";
+	//cout<<"framesize :"<<n<<" elements :"<<num<<endl;
 	while(curr < num)
 	{
+		//cout<<"current = "<<curr<<endl;
 		//left out of range case
 		if( curr < n/2 )
 		{
 			//left out of range element
 			for(int i=0; i < n/2 - curr; i++)
+			{
 				temp[i] = in[0];
+				//cout<<"leftoutranged\n";
+			}
 			//mid element and beyond; n/2 - curr is difference between two iterator
 			for(int i = n/2 - curr; i < n - n/2 + curr; i++)
+			{
 				temp[i] = in[i + n/2 - curr];
-
+				//cout<<"leftinranged\n";
+			}
 			std::sort(temp.begin(),temp.end());
 			out[curr] = temp[n/2];
+			//cout<<"leftside\n";
 			curr++;
 		}
 		//right out of range case
 		else if(curr + n/2  >= num)
 		{
+			//cout<<"rightcase\n";
 			for(int i = n - (curr+(n/2)-num-1);i < n;i++)
+			{
+				//cout<<"i = "<<i<<"num-1 = "<<num-1<<endl;
 				temp[i] = in[num-1];
+			}
 			for(int i = 0; i < n - (curr+(n/2)-num-1); i++)
 				temp[i] = in[i + curr - n/2];
 			curr++;
@@ -252,8 +264,9 @@ void simpmovmed(unsigned short *in, double *out, int num, int n)
 		//general case
 		else
 		{
+			//cout<<"gencase current = "<<curr<<endl;
 			for(int i=curr-n/2; i<1+curr+n/2; i++)
-				temp[i] = in[i];
+				temp[i - curr +n/2] = in[i];
 			std::sort(temp.begin(), temp.end());
 			out[curr] = temp[n/2];
 			curr++;

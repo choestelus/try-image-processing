@@ -15,7 +15,7 @@
 #include "statmath.h"
 #define rowPtr(imagePtr, dataType, lineIndex) \
 	(dataType *)(imagePtr->imageData + (lineIndex) * imagePtr->widthStep)
-#define mframesize 2
+#define mframesize 25
 using namespace cv;
 using namespace std;
 using std::cout;
@@ -142,8 +142,9 @@ int main(int argc, char** argv)
 		for(int i=0; i<width; i++)
 			zpb[i] = zscore(pb[i], mean, sd);
 
-		simpmovavg(pb, movavg, width, mframesize);
+		simpmovmed(pb, movavg, width, mframesize);
 		designal(noise, pb, movavg, width);
+		cout<<"test";
 		cout<<"r"<<maxrow+1;
 		cout<<" : mits "<<maxMat<unsigned short>(pb, width);
 		cout<<" mmean "<<fixed<<setprecision(2)<<maxmean;
@@ -155,7 +156,7 @@ int main(int argc, char** argv)
 		CvPlot::plot("GC", pb, width, 1, 128, 192, 128);
 		CvPlot::label("input");
 		CvPlot::plot("GC", movavg, width, 1, 255, 0, 0);
-		CvPlot::label("SMA");
+		CvPlot::label("signal");
 		CvPlot::plot("Noise", noise, width, 1, 0, 0, 255);
 	}
 	if(movavgalloc)
