@@ -15,7 +15,7 @@
 #include "statmath.h"
 #define rowPtr(imagePtr, dataType, lineIndex) \
 	(dataType *)(imagePtr->imageData + (lineIndex) * imagePtr->widthStep)
-#define mframesize 2
+#define mframesize 4
 using namespace cv;
 using namespace std;
 using std::cout;
@@ -84,7 +84,7 @@ int main(int argc, char** argv)
 			movavg = new double[width];
 			movavgalloc = true;
 		}
-		simpmovavg(pb, movavg, width, mframesize);
+		//simpmovavg(pb, movavg, width, mframesize);
 
 		for(int i=0; i<width; i++)
 			peakmap[i] = false;
@@ -97,7 +97,7 @@ int main(int argc, char** argv)
 		for(int i=0; i<width; i++)
 			zpb[i] = zscore(pb[i], mean, sd);
 		
-		cout<<"row  : ["<<the_line+1<<"/"<<heigth<<"]";
+		/*cout<<"row  : ["<<the_line+1<<"/"<<heigth<<"]";
 		cout<<" max its : "<<maxMat<unsigned short>(pb, width);
 		cout<<" max OIS : "<<max;
 		cout<<" mean : "<<fixed<<setprecision(2)<<mean;
@@ -121,7 +121,9 @@ int main(int argc, char** argv)
 			//CvPlot::clear("peak");
 		}
 		else
-			break;
+			break;*/
+		//in case of 1 line output
+		the_line++;
 	}
 
 	{
