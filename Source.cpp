@@ -15,7 +15,7 @@
 #include "statmath.h"
 #define rowPtr(imagePtr, dataType, lineIndex) \
 	(dataType *)(imagePtr->imageData + (lineIndex) * imagePtr->widthStep)
-#define mframesize 25
+#define mframesize 3
 using namespace cv;
 using namespace std;
 using std::cout;
@@ -142,7 +142,7 @@ int main(int argc, char** argv)
 		for(int i=0; i<width; i++)
 			zpb[i] = zscore(pb[i], mean, sd);
 
-		simpmovmed(pb, movavg, width, mframesize);
+		simpmovavg(pb, movavg, width, mframesize);
 		designal(noise, pb, movavg, width);
 		cout<<"test";
 		cout<<"r"<<maxrow+1;

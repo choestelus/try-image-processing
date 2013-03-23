@@ -185,16 +185,18 @@ void designal(double *out, unsigned short *in, double *insignal, int num)
 void simpmovavg(unsigned short *in, double *out, int num, int n)
 {
 	//initializing out of range data
-	for(int i=0; i<n; i++)
+	for(int i=0; i<num; i++)
 		out[i] = 0;
 	for(int i=0; i<n; i++)
 	{
-		if(i == 0)
+		if(true)
+			out[i] = in[i];
+		else if(i == 0)
 			out[i] = in[i];
 		else
 		{
 			int tempsum = 0;
-			for(int j = i; j<n;j++)
+			for(int j = 0; j<n;j++)
 				tempsum += in[j];
 			out[i] = double(tempsum)/double(i+1);
 		}
@@ -202,7 +204,7 @@ void simpmovavg(unsigned short *in, double *out, int num, int n)
 	//end of out of range case
 
 	double avgsum = 0;
-	int curr = 0;
+	int curr = n;
 
 	for(int i=curr; i<curr+n; i++)
 		avgsum += in[i];
@@ -272,6 +274,18 @@ void simpmovmed(unsigned short *in, double *out, int num, int n)
 			curr++;
 		}
 	}
-
+}
+void cmovavg(unsigned short *in, double *out, int num, int n)
+{
+	for(int i=0; i<num; i++)
+		out[i] = 0;
+	unsigned short curr = -1;
+	for(int i=0; i<num; i++)
+	{
+		if(i == 0)
+			out[i] = in[i];
+		else
+			out[i] = out[i-1] + double(in[i]-out[i-1])/double(i);
+	}
 }
 #endif
