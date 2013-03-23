@@ -173,6 +173,11 @@ int peakcount(std::vector<double> zvec, bool *out)
 	}
 	return count;
 }
+void designal(double *out, unsigned short *in, double *insignal, int num)
+{
+	for(int i=0; i<num; i++)
+		out[i] = double(in[i]) - insignal[i];
+}
 void simpmovavg(unsigned short *in, double *out, int num, int n)
 {
 	//initializing out of range data

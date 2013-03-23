@@ -15,7 +15,7 @@
 #include "statmath.h"
 #define rowPtr(imagePtr, dataType, lineIndex) \
 	(dataType *)(imagePtr->imageData + (lineIndex) * imagePtr->widthStep)
-#define mframesize 4
+#define mframesize 2
 using namespace cv;
 using namespace std;
 using std::cout;
@@ -64,6 +64,7 @@ int main(int argc, char** argv)
 	bool pmallocated = false;
 	bool movavgalloc = false;
 	double *movavg = nullptr;
+	double *noise = nullptr;
 	while (the_line < gimg.rows)
 	{
 		unsigned short *pb = gimg.ptr<unsigned short>(the_line);
@@ -82,6 +83,7 @@ int main(int argc, char** argv)
 		if(!movavgalloc)
 		{
 			movavg = new double[width];
+			noise = new double[width];
 			movavgalloc = true;
 		}
 		//simpmovavg(pb, movavg, width, mframesize);
@@ -141,7 +143,7 @@ int main(int argc, char** argv)
 			zpb[i] = zscore(pb[i], mean, sd);
 
 		simpmovavg(pb, movavg, width, mframesize);
-
+		designal(noise, pb, movavg, width);
 		cout<<"r"<<maxrow+1;
 		cout<<" : mits "<<maxMat<unsigned short>(pb, width);
 		cout<<" mmean "<<fixed<<setprecision(2)<<maxmean;
@@ -153,9 +155,14 @@ int main(int argc, char** argv)
 		CvPlot::plot("GC", pb, width, 1, 128, 192, 128);
 		CvPlot::label("input");
 		CvPlot::plot("GC", movavg, width, 1, 255, 0, 0);
+		CvPlot::label("SMA");
+		CvPlot::plot("Noise", noise, width, 1, 0, 0, 255);
 	}
 	if(movavgalloc)
+	{
 		delete[] movavg;
+		delete[] noise;
+	}
 	waitKey(0);
 	return 0;
 }
