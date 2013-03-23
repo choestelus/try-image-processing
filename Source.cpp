@@ -25,11 +25,11 @@ void accessMat(Mat&, Mat&);
 template <typename T>
 int cumulative(T *in, int size);
 
+// maximum value in 1D Matrix
 template <class T>
 int maxMat(T *in, int size);
-template <class T>
-T maxt(const T &a, const T &b)
-{	return a>b?a:b;	}
+
+
 int main(int argc, char** argv)
 {	
 	unsigned short max = 0;
@@ -195,7 +195,7 @@ int cumulative(T *in, int size)
 		sum+=in[i];
 	return sum;
 }
-
+// maximum value in 1D Matrix
 template <class T>
 int maxMat(T *in, int size)
 {

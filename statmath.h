@@ -5,6 +5,10 @@
 #include <cmath>
 #include <algorithm>
 const double PI = 4*atan(1);
+
+template <class T>
+T maxt(const T &a, const T &b)
+{	return a>b?a:b;	}
 double avrg(std::vector<unsigned short> v)
 {      double sum=0;
        for(unsigned int i=0;i<v.size();i++)
@@ -196,6 +200,7 @@ void simpmovavg(unsigned short *in, double *out, int num, int n)
 		}
 	}
 	//end of out of range case
+
 	double avgsum = 0;
 	int curr = 0;
 
@@ -211,14 +216,49 @@ void simpmovavg(unsigned short *in, double *out, int num, int n)
 		curr++;
 	}
 }
-void simpmovmed(unsigned short *in, double *out, int num, const int n)
+void simpmovmed(unsigned short *in, double *out, int num, int n)
 {
-	unsigned short *temp = new unsigned short[n];
-	while(0)
+	int curr = 0;
+	if(n%2 == 0)
+		n++;
+	std::vector<unsigned short> temp;
+	temp.resize(n);
+
+	while(curr < num)
 	{
-		;
+		//left out of range case
+		if( curr < n/2 )
+		{
+			//left out of range element
+			for(int i=0; i < n/2 - curr; i++)
+				temp[i] = in[0];
+			//mid element and beyond; n/2 - curr is difference between two iterator
+			for(int i = n/2 - curr; i < n - n/2 + curr; i++)
+				temp[i] = in[i + n/2 - curr];
+
+			std::sort(temp.begin(),temp.end());
+			out[curr] = temp[n/2];
+			curr++;
+		}
+		//right out of range case
+		else if(curr + n/2  >= num)
+		{
+			for(int i = n - (curr+(n/2)-num-1);i < n;i++)
+				temp[i] = in[num-1];
+			for(int i = 0; i < n - (curr+(n/2)-num-1); i++)
+				temp[i] = in[i + curr - n/2];
+			curr++;
+		}
+		//general case
+		else
+		{
+			for(int i=curr-n/2; i<1+curr+n/2; i++)
+				temp[i] = in[i];
+			std::sort(temp.begin(), temp.end());
+			out[curr] = temp[n/2];
+			curr++;
+		}
 	}
 
-	delete[] temp;
 }
 #endif
